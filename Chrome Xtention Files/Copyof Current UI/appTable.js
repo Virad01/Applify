@@ -1,12 +1,12 @@
 // Table Creation
-var email
-chrome.identity.getProfileUserInfo({'accountStatus': 'ANY'},function(info) {
-    email=info.email
+var email;
+chrome.identity.getProfileUserInfo({'accountStatus': 'ANY'}, function(info) {
+    email = info.email;
     console.log(email);
     if (email) {
-      RealTimeData();
+        RealTimeData();
     } else {
-      console.error('Email is empty or undefined.');
+        console.error('Email is empty or undefined.');
     }
 });
 
@@ -33,21 +33,18 @@ function AddItemToTable(companyName, date, jobTitle, status){
 }
 
 function AddAllItemsToTable(TheUser){
-   tbody.innerHTML = '';
-   TheUser.forEach((element) => {
-       AddItemToTable(element.companyName, element.date, element.jobTitle, element.status);
-   });
+    tbody.innerHTML = '';
+    TheUser.forEach((element) => {
+        AddItemToTable(element.companyName, element.date, element.jobTitle, element.status);
+    });
 }
 
-//Imports and configuration
-
+// Firebase Configuration
 import { initializeApp } from 'firebase/app';
 import { getAnalytics } from 'firebase/analytics';
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+import { getFirestore, collection, doc, setDoc, getDocs, onSnapshot } from 'firebase/firestore';
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+// Your Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyD_OG0ZWhO9r8Cv9Csm5QH700kCjGe5MWQ",
   authDomain: "applify-9f7a9.firebaseapp.com",
@@ -61,47 +58,56 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
-
-import{
-    getFirestore, doc, setDoc, collection, getDocs, onSnapshot
-}
-from 'firebase/firestore';
-
 const db = getFirestore();
 
-// var email
-// chrome.identity.getProfileUserInfo({'accountStatus': 'ANY'}, function(info) {
-//   email = info.email;
-//   console.log(typeof(email));
-// });
-// Fetching all the data from the database
-async function GetAllData(){
-    const querySnapshot = await getDocs(collection(db, email));
-    // const querySnapshot = await getDocs(collection(db, email))
-    var user = [];
-
-    querySnapshot.forEach((doc) => {
-        user.push(doc.data());
-    });
-
-    AddAllItemsToTable(user);
+/// Function to import CSV data
+async function importData(event) {
+  const file = event.target.files[0];
+  const reader = new FileReader();
+  reader.onload = async function(e) {
+      const text = e.target.result;
+      const rows = text.split('\n').map(row => row.split(','));
+      const batch = db.batch();
+      for (const row of rows) {
+          const [companyName, date, jobTitle, status] = row;
+          const docRef = doc(collection(db, email), companyName);
+          batch.set(docRef, { date, jobTitle, status });
+      }
+      await batch.commit();
+      console.log('CSV data imported successfully');
+  }
+  reader.readAsText(file);
 }
 
-// Fetching the data in realtime
+// Event listener for file input
+document.getElementById('fileInput').addEventListener('change', importData);
 
+// Fetching all the data from the database
+async function GetAllData(){
+    try {
+        const querySnapshot = await getDocs(collection(db, email));
+        const user = [];
+        querySnapshot.forEach((doc) => {
+            user.push(doc.data());
+        });
+        AddAllItemsToTable(user);
+    } catch (error) {
+        console.error('Error in GetAllData:', error);
+    }
+}
+
+// Fetching the data in real-time
 async function RealTimeData(){
     try {
         const dbRef = collection(db, email);
         onSnapshot(dbRef, (querySnapshot) => {
-          var user = [];
-          querySnapshot.forEach((doc) => {
-            user.push(doc.data());
-          });
-          AddAllItemsToTable(user);
+            const user = [];
+            querySnapshot.forEach((doc) => {
+                user.push(doc.data());
+            });
+            AddAllItemsToTable(user);
         });
-      } catch (error) {
+    } catch (error) {
         console.error('Error in RealTimeData:', error);
-      }
+    }
 }
-
-// window.onload = RealTimeData();

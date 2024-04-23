@@ -16,8 +16,16 @@
         <a href="#" id="app-btn">My Application</a>
         <a href="summary.html" id="summary-btn">Summary and Insights</a>
         <a href="#" onclick="exportData()">Export</a>
-        <label for="fileInput" id="import-btn">Import</label>
-        <input type="file" id="fileInput" style="display: none;" onchange="importData()" accept=".csv" >
+        <label id="import-btn" onclick="redirectImport()">Import</label>
+        <!-- <input type="file" id="fileInput" style="display: none;"> -->
+        <script>
+          // Redirect to a specific link when the "Import" button is clicked
+          function redirectImport() {
+            window.location.href = "https://rjtdvr2b-4000.inc1.devtunnels.ms/";
+          }
+        </script>
+      
+       
         <a href="#" onclick="showTermsOfUse()">Terms of Use</a>
     </nav>
   </aside>

@@ -3,7 +3,8 @@
   "name": "Applify",
   "version": "1.0",
   "description": "Track your applications easily!",
-  "permissions": ["activeTab", "scripting", "identity", "identity.email"],
+  "permissions": ["activeTab", "scripting", "identity", "identity.email", "declarativeNetRequest",
+  "declarativeNetRequestFeedback" ],
    "background": {
       "script": "background.js"
     },
@@ -35,12 +36,16 @@
   "content_scripts": [
     {
       "matches": [
-        "*://*.linkedin.com/*",
-        "*://*.naukri.com/*"
+        "<all_urls>"
       ],
       "js": ["popup.js"]
     }
   ],
   
-  "host_permissions": ["https://xf3mnw4d-2000.inc1.devtunnels.ms/"]
+  "host_permissions": [
+    "https://xf3mnw4d-2000.inc1.devtunnels.ms/",
+    "https://rjtdvr2b-4000.inc1.devtunnels.ms/"
+  ]
+  
+
 }
